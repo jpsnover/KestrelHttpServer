@@ -22,16 +22,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var integerBytes = new byte[6];
                     Assert.True(IntegerEncoder.Encode(i, n, integerBytes, out var length));
 
-                    var decodeResult = decoder.BeginDecode(integerBytes[0], n);
+                    var decodeResult = decoder.BeginTryDecode(integerBytes[0], n, out var intResult);
 
                     for (int j = 1; j < length; j++)
                     {
                         Assert.False(decodeResult);
-                        decodeResult = decoder.Decode(integerBytes[j]);
+                        decodeResult = decoder.TryDecode(integerBytes[j], out intResult);
                     }
 
                     Assert.True(decodeResult);
-                    Assert.Equal(i, decoder.Value);
+                    Assert.Equal(i, intResult);
                 }
             }
         }

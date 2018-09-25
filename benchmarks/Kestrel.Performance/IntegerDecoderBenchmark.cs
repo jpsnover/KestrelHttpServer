@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             for (var i = 0; i < Iterations; i++)
             {
-                _integerDecoder.BeginDecode(_singleByte, _prefixLength);
+                _integerDecoder.BeginTryDecode(_singleByte, _prefixLength, out _);
             }
         }
 
@@ -29,11 +29,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             for (var i = 0; i < Iterations; i++)
             {
-                _integerDecoder.BeginDecode(_multiByte[0], _prefixLength);
+                _integerDecoder.BeginTryDecode(_multiByte[0], _prefixLength, out _);
 
                 for (var j = 1; j < _multiByte.Length; j++)
                 {
-                    _integerDecoder.Decode(_multiByte[j]);
+                    _integerDecoder.TryDecode(_multiByte[j], out _);
                 }
             }
         }

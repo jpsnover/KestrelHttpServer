@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void IntegerDecode(int i, int prefixLength, byte[] octets)
         {
             var decoder = new IntegerDecoder();
-            var result = decoder.BeginDecode(octets[0], prefixLength);
+            var result = decoder.BeginTryDecode(octets[0], prefixLength, out var intResult);
 
             if (octets.Length == 1)
             {
@@ -25,13 +25,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 for (; j < octets.Length - 1; j++)
                 {
-                    Assert.False(decoder.Decode(octets[j]));
+                    Assert.False(decoder.TryDecode(octets[j], out intResult));
                 }
 
-                Assert.True(decoder.Decode(octets[j]));
+                Assert.True(decoder.TryDecode(octets[j], out intResult));
             }
 
-            Assert.Equal(i, decoder.Value);
+            Assert.Equal(i, intResult);
         }
 
         [Theory]
@@ -39,14 +39,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void IntegerDecode_Throws_IfMaxExceeded(int prefixLength, byte[] octets)
         {
             var decoder = new IntegerDecoder();
-            var result = decoder.BeginDecode(octets[0], prefixLength);
+            var result = decoder.BeginTryDecode(octets[0], prefixLength, out var intResult);
 
             for (var j = 1; j < octets.Length - 1; j++)
             {
-                Assert.False(decoder.Decode(octets[j]));
+                Assert.False(decoder.TryDecode(octets[j], out intResult));
             }
 
-            Assert.Throws<HPackDecodingException>(() => decoder.Decode(octets[octets.Length - 1]));
+            Assert.Throws<HPackDecodingException>(() => decoder.TryDecode(octets[octets.Length - 1], out intResult));
         }
 
         public static TheoryData<int, int, byte[]> IntegerData
