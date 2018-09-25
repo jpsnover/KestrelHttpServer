@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
     {
         // The maximum we will decode is Int32.MaxValue, which is also the maximum request header field size.
 
-        private uint _i; // Need the extra bit for overflow due to prefix
+        private int _i;
         private int _m;
 
         public int Value { get; private set; }
@@ -27,18 +27,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         public bool Decode(byte b)
         {
-            _i = _i + (b & 0x7fu) * (1u << _m);
-            _m = _m + 7;
+            _i += (b & 0x7f) << _m;
+            _m += 7;
 
             if ((b & 0x80) != 0x80)
             {
                 // Int32.MaxValue only needs a maximum of 5 bytes to represent and the last byte cannot have any value set larger than 0x7
-                if ((_m > 28 && (b & 0xf8) > 0) || _i > int.MaxValue)
+                if ((_m > 28 && b > 0x7) || _i < 0)
                 {
                     throw new HPackDecodingException("Integer too big");
                 }
 
-                Value = unchecked((int)_i);
+                Value = _i;
                 return true;
             }
             else if (_m > 28)
