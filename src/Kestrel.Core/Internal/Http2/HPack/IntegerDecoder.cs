@@ -12,6 +12,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         public int Value { get; private set; }
 
+        /// <summary>
+        /// Callers must ensure higher bits above the prefix are cleared before calling this method.
+        /// </summary>
+        /// <param name="b"></param>
+        /// <param name="prefixLength"></param>
+        /// <returns></returns>
         public bool BeginDecode(byte b, int prefixLength)
         {
             if (b < ((1 << prefixLength) - 1))
@@ -27,25 +33,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         public bool Decode(byte b)
         {
-            _i += (b & 0x7f) << _m;
-            _m += 7;
+            var m = _m;
+            var i = _i + (b & 0x7f) << m;
+            m += 7;
 
             if ((b & 0x80) != 0x80)
             {
                 // Int32.MaxValue only needs a maximum of 5 bytes to represent and the last byte cannot have any value set larger than 0x7
-                if ((_m > 28 && b > 0x7) || _i < 0)
+                if ((m > 28 && b > 0x7) || i < 0)
                 {
                     throw new HPackDecodingException("Integer too big");
                 }
 
-                Value = _i;
+                Value = i;
                 return true;
             }
-            else if (_m > 28)
+            else if (m > 28)
             {
                 // Int32.MaxValue only needs a maximum of 5 bytes to represent
                 throw new HPackDecodingException("Integer too big");
             }
+
+            _m = m;
+            _i = i;
 
             return false;
         }
