@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var decoder = new IntegerDecoder();
             var range = 1 << 8;
 
-            foreach (var i in Enumerable.Range(0, range).Concat(Enumerable.Range(int.MaxValue - range, range)))
+            foreach (var i in Enumerable.Range(0, range).Concat(Enumerable.Range(int.MaxValue - range + 1, range)))
             {
                 for (int n = 1; n <= 8; n++)
                 {
